@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	maxWorker = 10
-	url       = "https://www.google.com"
+	maxWorkers = 100000
+	url        = "http://localhost:8082/"
 )
 
 var wg sync.WaitGroup
@@ -18,25 +18,38 @@ func Worker(id int) {
 	defer wg.Done()
 
 	client := &http.Client{
-		Timeout: 10 * time.Second,
+		//Timeout: 10 * time.Second,
 	}
 
 	resp, err := client.Get(url)
 	if err != nil {
-		fmt.Printf("Worker %d: Error: %v\n", id, err)
+		//fmt.Printf("Worker %d: Error: %v\n", id, err)
 		return
 	}
 	defer resp.Body.Close()
 
-	fmt.Printf("Worker %d: Status Code: %d\n", id, resp.StatusCode)
+	//fmt.Printf("Worker %d: Status Code: %d\n", id, resp.Status)
+}
+
+func startServer() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		//fmt.Fprintf(w, "Hello, Go!")
+	})
+
+	err := http.ListenAndServe(":8082", nil)
+	if err != nil {
+		//fmt.Printf("Server failed: %v\n", err)
+	}
 }
 
 func main() {
-	for i := 0; i <= maxWorker; i++ {
-		wg.Add(1)
-		time.Sleep(2 * time.Second)
-		go Worker(i)
+	go startServer()
 
+	time.Sleep(2 * time.Second)
+
+	for i := 0; i < maxWorkers; i++ {
+		wg.Add(1)
+		go Worker(i)
 	}
 
 	wg.Wait()
