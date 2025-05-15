@@ -35,7 +35,7 @@ func main() {
 
 	go func() {
 		c := cron.New()
-		c.AddFunc("@every 5m", func() {
+		c.AddFunc("5 * * * *", func() {
 
 			pairs, _ := pairStorage.GetAllPairs(context.Background())
 			for _, pair := range pairs {
